@@ -68,7 +68,7 @@ def main():
     # create tables
     if conn is not None:
         create_table(conn, sql_create_songs_table)
-        # create_table(conn, sql_create_movies_table)
+        create_table(conn, sql_create_movies_table)
         create_table(conn, sql_create_apps_table)
     else:
         print("Error! cannot create the database connection.")

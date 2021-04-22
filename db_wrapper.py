@@ -29,6 +29,48 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
+def create_song_record(conn, song):
+    """
+    Create a new record into the songs table
+    :param conn:
+    :param song:
+    :return: 
+    """
+    sql = ''' INSERT INTO songs(artist_name,title,year,release,ingestion_time)
+              VALUES(?,?,?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, song)
+    conn.commit()
+    return cur.lastrowid
+
+def create_movie_record(conn, movie):
+    """
+    Create a new record into the movies table
+    :param conn:
+    :param movie:
+    :return: 
+    """
+    sql = ''' INSERT INTO movies(original_title,original_language,budget,is_adult,release_date, original_title_normalized)
+              VALUES(?,?,?,?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, movie)
+    conn.commit()
+    return cur.lastrowid
+
+def create_app_record(conn, app):
+    """
+    Create a new record into the apps table
+    :param conn:
+    :param app:
+    :return: 
+    """
+    sql = ''' INSERT INTO apps(name,genre,rating,version,size_bytes, is_awesome)
+              VALUES(?,?,?,?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, app)
+    conn.commit()
+    return cur.lastrowid
+
 
 def main():
     database = "data_engineer_test_task/types.db"
@@ -72,5 +114,10 @@ def main():
         create_table(conn, sql_create_apps_table)
     else:
         print("Error! cannot create the database connection.")
+
+    # create a record
+    
+
+
 
 main()

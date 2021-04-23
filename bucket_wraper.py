@@ -4,7 +4,7 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
-from config import BUCKET_NAME, FILES_LIST
+from constants import BUCKET_NAME, FILES_LIST
 
 s3_client = boto3.resource('s3')
 bucket = s3_client.Bucket(BUCKET_NAME)

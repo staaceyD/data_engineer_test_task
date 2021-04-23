@@ -17,7 +17,7 @@ def add_movie(data, file_name_id):
     for record in data:
         if record["type"] == "movie":
             original_title_normalized = re.sub(
-                r"\W", " ", record["data"]["original_title"].lower())
+                "\W", " ", record["data"]["original_title"].lower())
             original_title_normalized = re.sub(
                 " +", '_', original_title_normalized)
             movies_data.append((record["data"]["original_title"], record["data"]["original_language"], record["data"]

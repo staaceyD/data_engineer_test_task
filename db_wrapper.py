@@ -1,7 +1,8 @@
 import sqlite3
 from sqlite3 import Error
 
-from bucket_wraper import process_files
+from bucket_wraper import get_files, process_files
+from config import FILES_LIST
 from utils import add_app, add_movie, add_song
 
 
@@ -33,6 +34,21 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
     except Error as e:
         print(e)
+
+
+def create_file_name_record(conn, file_name):
+    """
+    Create a new record into the file_names table
+    :param conn:
+    :param file_name:
+    :return: file_name id
+    """
+    sql = ''' INSERT INTO file_names(name)
+              VALUES(?) '''
+    cur = conn.cursor()
+    cur.execute(sql, file_name)
+    conn.commit()
+    return cur.lastrowid
 
 
 def create_song_record(conn, song):
@@ -83,6 +99,11 @@ def create_app_record(conn, app):
 def main():
     database = "data_engineer_test_task/types.db"
 
+    sql_create_file_names_table = """ CREATE TABLE IF NOT EXISTS file_names (
+                                        id integer PRIMARY KEY,
+                                        name text
+                                    ); """
+
     sql_create_songs_table = """ CREATE TABLE IF NOT EXISTS songs (
                                         id integer PRIMARY KEY,
                                         artist_name text,
@@ -117,6 +138,7 @@ def main():
 
     # create tables
     if conn is not None:
+        create_table(conn, sql_create_file_names_table)
         create_table(conn, sql_create_songs_table)
         create_table(conn, sql_create_movies_table)
         create_table(conn, sql_create_apps_table)
@@ -125,7 +147,12 @@ def main():
 
     # create a record
     with conn:
+        file_names_list = get_files(FILES_LIST).split("\n")
+        for file_name in file_names_list:
+            create_file_name_record(conn, (file_name,))
+
         data = process_files()
+
         for song in add_song(data):
             create_song_record(conn, song)
 

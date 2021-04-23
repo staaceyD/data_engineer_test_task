@@ -58,8 +58,8 @@ def create_song_record(conn, song):
     :param song:
     :return: 
     """
-    sql = ''' INSERT INTO songs(artist_name,title,year,release,ingestion_time)
-              VALUES(?,?,?,?,?) '''
+    sql = ''' INSERT INTO songs(artist_name,title,year,release,ingestion_time, file_name_id)
+              VALUES(?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, song)
     conn.commit()
@@ -73,8 +73,8 @@ def create_movie_record(conn, movie):
     :param movie:
     :return: 
     """
-    sql = ''' INSERT INTO movies(original_title,original_language,budget,is_adult,release_date, original_title_normalized)
-              VALUES(?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO movies(original_title,original_language,budget,is_adult,release_date, original_title_normalized, file_name_id)
+              VALUES(?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, movie)
     conn.commit()
@@ -88,8 +88,8 @@ def create_app_record(conn, app):
     :param app:
     :return: 
     """
-    sql = ''' INSERT INTO apps(name,genre,rating,version,size_bytes, is_awesome)
-              VALUES(?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO apps(name,genre,rating,version,size_bytes, is_awesome, file_name_id)
+              VALUES(?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, app)
     conn.commit()
@@ -110,7 +110,9 @@ def main():
                                         title text,
                                         year integer,
                                         release text,
-                                        ingestion_time text
+                                        ingestion_time text,
+                                        file_name_id int,
+                                        FOREIGN KEY (file_name_id) REFERENCES file_names (id)
                                     ); """
 
     sql_create_movies_table = """CREATE TABLE IF NOT EXISTS movies (
@@ -120,7 +122,9 @@ def main():
                                     budget integer,
                                     is_adult text,
                                     release_date text,
-                                    original_title_normalized text
+                                    original_title_normalized text,
+                                    file_name_id int,
+                                    FOREIGN KEY (file_name_id) REFERENCES file_names (id)
                                 );"""
 
     sql_create_apps_table = """CREATE TABLE IF NOT EXISTS apps (
@@ -130,7 +134,9 @@ def main():
                                     rating real,
                                     version text,
                                     size_bytes int,
-                                    is_awesome text
+                                    is_awesome text,
+                                    file_name_id int,
+                                    FOREIGN KEY (file_name_id) REFERENCES file_names (id)
                                 );"""
 
     # create a database connection
@@ -149,17 +155,17 @@ def main():
     with conn:
         file_names_list = get_files(FILES_LIST).split("\n")
         for file_name in file_names_list:
-            create_file_name_record(conn, (file_name,))
+            file_name_id = create_file_name_record(conn, (file_name,))
 
         data = process_files()
 
-        for song in add_song(data):
+        for song in add_song(data, file_name_id):
             create_song_record(conn, song)
 
-        for movie in add_movie(data):
+        for movie in add_movie(data, file_name_id):
             create_movie_record(conn, movie)
 
-        for app in add_app(data):
+        for app in add_app(data, file_name_id):
             create_app_record(conn, app)
 
 

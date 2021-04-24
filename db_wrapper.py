@@ -1,11 +1,13 @@
 import sqlite3
 from sqlite3 import Error
 
-from bucket_wraper import get_files, process_files
-from constants import (FILES_LIST, SQL_CREATE_APPS_TABLE,
-                       SQL_CREATE_FILE_NAMES_TABLE, SQL_CREATE_MOVIES_TABLE,
-                       SQL_CREATE_SONGS_TABLE)
-from utils import add_app, add_movie, add_song
+from bucket_wraper import get_files_json, process_files
+from constants.bucket_constants import FILES_LIST
+from constants.db_constants import (SQL_CREATE_APPS_TABLE,
+                                    SQL_CREATE_FILE_NAMES_TABLE,
+                                    SQL_CREATE_MOVIES_TABLE,
+                                    SQL_CREATE_SONGS_TABLE)
+from db_utils import parse_apps, parse_movies, parse_songs
 
 
 def create_connection(db_file):
@@ -104,13 +106,7 @@ def create_app_record(conn, app):
     return c.lastrowid
 
 
-def main():
-    database = "data_engineer_test_task/types.db"
-
-    # create a database connection
-    conn = create_connection(database)
-
-    # create tables
+def create_tables(conn):
     if conn is not None:
         create_table(conn, SQL_CREATE_FILE_NAMES_TABLE)
         create_table(conn, SQL_CREATE_SONGS_TABLE)
@@ -119,25 +115,40 @@ def main():
     else:
         print("Error! cannot create the database connection.")
 
-    # create a record
-    with conn:
-        file_names_list = get_files(FILES_LIST).split("\n")
-        for file_name in file_names_list:
 
+def create_records(conn):
+    with conn:
+        file_names_list = get_files_json(FILES_LIST).split("\n")
+        # create records to file_names table
+        for file_name in file_names_list:
             file_name_id = create_file_name_record(conn, (file_name,))
 
+        # create records to songs, movies and apps table if file was not already processed
         data = process_files()
-        if file_name_id is not None:
-            for song in add_song(data, file_name_id):
-                create_song_record(conn, song)
+        # if file_name_id is not None:
+        for song in parse_songs(data, file_name_id):
+            create_song_record(conn, song)
 
-            for movie in add_movie(data, file_name_id):
+            for movie in parse_movies(data, file_name_id):
                 create_movie_record(conn, movie)
 
-            for app in add_app(data, file_name_id):
+            for app in parse_apps(data, file_name_id):
                 create_app_record(conn, app)
         else:
             print("The file is already proccessed, record will not be added")
+
+
+def main():
+    database = "data_engineer_test_task/types.db"
+
+    # create a database connection
+    conn = create_connection(database)
+
+    # create tables
+    create_tables(conn)
+
+    # create records to all tables
+    create_records(conn)
 
 
 if __name__ == '__main__':

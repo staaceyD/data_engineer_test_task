@@ -1,6 +1,3 @@
-BUCKET_NAME = "data-engineering-interns.macpaw.io"
-FILES_LIST = "files_list.data"
-
 SQL_CREATE_FILE_NAMES_TABLE = """ CREATE TABLE IF NOT EXISTS file_names (
                                         id integer PRIMARY KEY,
                                         name text

@@ -119,27 +119,29 @@ def create_tables(conn):
 def create_records(conn):
     with conn:
         file_names_list = get_files_json(FILES_LIST).split("\n")
+
         # create records to file_names table
         for file_name in file_names_list:
             file_name_id = create_file_name_record(conn, (file_name,))
 
         # create records to songs, movies and apps table if file was not already processed
         data = process_files()
-        # if file_name_id is not None:
-        for song in parse_songs(data, file_name_id):
-            create_song_record(conn, song)
 
-            for movie in parse_movies(data, file_name_id):
-                create_movie_record(conn, movie)
+        if file_name_id is not None:
+            for song in parse_songs(data, file_name_id):
+                create_song_record(conn, song)
 
-            for app in parse_apps(data, file_name_id):
-                create_app_record(conn, app)
-        else:
-            print("The file is already proccessed, record will not be added")
+                for movie in parse_movies(data, file_name_id):
+                    create_movie_record(conn, movie)
+
+                for app in parse_apps(data, file_name_id):
+                    create_app_record(conn, app)
+            else:
+                print("The file is already proccessed, record will not be added")
 
 
 def main():
-    database = "data_engineer_test_task/types.db"
+    database = "types.db"
 
     # create a database connection
     conn = create_connection(database)
